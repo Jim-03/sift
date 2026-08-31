@@ -62,9 +62,9 @@ def get_jobs():
     """Retrieve job postings from all defined companies
 
     Returns:
-        list[dict[str, object]]: A list of all companies with their available job postings
+        list[str]: A list of all companies with their available job postings
     """
-    jobs: list[dict[str, object]] = []
+    jobs: list[str] = []
     with sync_playwright() as p:
         # Launch browser and open a page
         browser = p.webkit.launch()
@@ -79,15 +79,12 @@ def get_jobs():
                 print(f"No listings from {company['name']}")
                 continue
             listings = get_listings(company["content_selector"], links, page)
-            jobs.append(
-                {
-                    "company": company["name"],
-                    "jobs": [
-                        {"url": links[i], "inner_text": listings[i]}
-                        for i in range(len(links))
-                    ],
-                }
-            )
+            for url, text in zip(links, listings):
+                jobs.append(f"""
+                Company Name: {company["name"]}
+                URL: {url}
+                Raw text: {text}
+                """)
         browser.close()
 
     return jobs
