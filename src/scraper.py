@@ -22,7 +22,7 @@ def get_links(company: dict[str, str], page: Page) -> list[str]:
     located = page.locator(company["descriptor"]).all()
 
     for link in located:
-        href = link.get_attribute(company["descriptor"])
+        href = link.get_attribute(company["attribute"])
 
         if href:
             links.append(href)
