@@ -13,5 +13,4 @@ dependencies = [
     "pydantic>=2.13.5",
     "ruff>=0.16.5",
     "scikit-learn>=1.9.0",
-    "sqlalchemy>=2.0.52",
 ]
