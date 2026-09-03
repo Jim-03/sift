@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 from google.genai import Client
 from google.genai.types import ContentEmbedding
 
-from dto import JobListings
+from data import get_data
+from dto import Job, JobListings, MetadataList
 
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
@@ -91,3 +92,57 @@ class Gemini:
             raise Exception("Gemini failed to generate response")
 
         return JobListings.model_validate_json(results)
+
+    def make_notes(self, jobs: list[Job]):
+        """Make Gemini reviewed notes based on user profile and job description
+
+        Args:
+            jobs (list[Job]): List of job data
+
+        Returns:
+             (MetadataList): List of notes
+        """
+        if not jobs:
+            raise Exception("No jobs for note making!")
+
+        SYSTEM_PROMPT = f"""
+        You are a helpful review assistant. You are required to make a brief 
+        review of a user's profile against a list of job objects. The details are
+        provided in </context>. Follow the instructions at </instructions> on how
+        to review.
+        
+        <context>
+        **PROFILE SUMMARY:** {get_data("summary")}
+        **SKILLS:** {get_data("skills")}
+        </context>
+        
+        <instructions>
+        1. Provide a brief review assessing the user's match against each job.
+        2. The response for each job should be in **MARKDOWN** format.
+        3. Keep the review brief. The review can include (not strict) the overall
+           review, the fitness score or the skill gap.
+        4. Assume the response will be read in an email.
+        5. Use the value from the 'id' property to determine which response 
+           belongs to which job.
+        6. Be brutally honest on everything.
+        7. Use a standard format for every review.
+        </instructions>
+        """
+
+        interaction = self.__client.interactions.create(
+            model="gemini-3.8-flash",
+            input=", ".join([str(job) for job in jobs]),
+            system_instruction=SYSTEM_PROMPT,
+            response_format={
+                "mime_type": "application/json",
+                "type": "text",
+                "schema": MetadataList.model_json_schema(),
+            },
+        )
+
+        result = interaction.output_text
+
+        if not result:
+            raise Exception("Failed to review jobs")
+
+        return MetadataList.model_validate_json(result)

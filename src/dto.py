@@ -1,9 +1,14 @@
+import uuid
 from datetime import date, timedelta
 
 from pydantic import BaseModel, Field
 
 
 class Job(BaseModel):
+    id: str = Field(
+        default_factory=lambda: uuid.uuid4().hex,
+        description="A system auto-generated unique identifier",
+    )
     is_valid_job: bool = Field(
         description="Property to confirm if the provided data is valid job description"
     )
@@ -55,3 +60,14 @@ class Job(BaseModel):
 
 class JobListings(BaseModel):
     jobs: list[Job] = Field(description="A list of jobs")
+
+
+class Metadata(BaseModel):
+    job_id: str = Field(description="Job's unique identifier")
+    notes: str = Field(
+        description="Brief overview of the user's match to the job description"
+    )
+
+
+class MetadataList(BaseModel):
+    data: list[Metadata] = Field(description="A list of job metadata")
