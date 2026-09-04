@@ -5,54 +5,54 @@ from dotenv import load_dotenv
 from google.genai import Client
 from google.genai.types import ContentEmbedding
 
-from data import get_data
-from dto import Job, JobListings, MetadataList
+from src.data import get_data
+from src.dto import Job, JobListings, MetadataList
 
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 
 class Gemini:
-    def __init__(self):
-        self.__client: Client = Client(api_key=API_KEY)
+  def __init__(self):
+    self.__client: Client = Client(api_key=API_KEY)
 
-    def embed(self, listings: list[str] | str) -> list[ContentEmbedding]:
-        """Convert texts to vectors
+  def embed(self, listings: list[str] | str) -> list[ContentEmbedding]:
+    """Convert texts to vectors
 
-        Args:
-            listings (list[str] | str): List of texts or a text to be embedded
+    Args:
+        listings (list[str] | str): List of texts or a text to be embedded
 
-        Returns:
-            list[ContentEmbedding]: A dense vector representation of the input data
-        """
+    Returns:
+        list[ContentEmbedding]: A dense vector representation of the input data
+    """
 
-        if not listings:
-            raise Exception("Provide data to be embedded!")
+    if not listings:
+      raise Exception("Provide data to be embedded!")
 
-        result = self.__client.models.embed_content(
-            model="gemini-embedding-2", contents=listings
-        )
+    result = self.__client.models.embed_content(
+        model="gemini-embedding-2", contents=listings
+    )
 
-        embeddings = result.embeddings
+    embeddings = result.embeddings
 
-        if not embeddings:
-            raise Exception("Embedding failed!")
+    if not embeddings:
+      raise Exception("Embedding failed!")
 
-        return embeddings
+    return embeddings
 
-    def extract(self, jobs: list[str]) -> JobListings:
-        """Retrieve a list of jobs from scraped content
+  def extract(self, jobs: list[str]) -> JobListings:
+    """Retrieve a list of jobs from scraped content
 
-        Args:
-            jobs (list[str]): A list of scrape content
+    Args:
+        jobs (list[str]): A list of scrape content
 
-        Returns:
-            (JobListings): An object containing a list of job objects
-        """
-        if not jobs:
-            raise Exception("No jobs content provided!")
+    Returns:
+        (JobListings): An object containing a list of job objects
+    """
+    if not jobs:
+      raise Exception("No jobs content provided!")
 
-        SYSTEM_PROMPT = f"""
+    SYSTEM_PROMPT = f"""
         You are a helpful extraction assistant. You have been provided a list of
         scraped HTML content containing a job description. Your task is to extract
         the job description from the content following the strict rules at 
@@ -73,39 +73,39 @@ class Gemini:
         </date>
         """
 
-        interactions = self.__client.interactions.create(
-            model="gemini-3.1-flash-lite",
-            system_instruction=SYSTEM_PROMPT,
-            input=", ".join(jobs),
-            store=False,
-            generation_config={"temperature": 0.1},
-            response_format={
-                "type": "text",
-                "mime_type": "application/json",
-                "schema": JobListings.model_json_schema(),
-            },
-        )
+    interactions = self.__client.interactions.create(
+        model="gemini-3.1-flash-lite",
+        system_instruction=SYSTEM_PROMPT,
+        input=", ".join(jobs),
+        store=False,
+        generation_config={"temperature": 0.1},
+        response_format={
+          "type": "text",
+          "mime_type": "application/json",
+          "schema": JobListings.model_json_schema(),
+        },
+    )
 
-        results = interactions.output_text
+    results = interactions.output_text
 
-        if not results:
-            raise Exception("Gemini failed to generate response")
+    if not results:
+      raise Exception("Gemini failed to generate response")
 
-        return JobListings.model_validate_json(results)
+    return JobListings.model_validate_json(results)
 
-    def make_notes(self, jobs: list[Job]):
-        """Make Gemini reviewed notes based on user profile and job description
+  def make_notes(self, jobs: list[Job]):
+    """Make Gemini reviewed notes based on user profile and job description
 
-        Args:
-            jobs (list[Job]): List of job data
+    Args:
+        jobs (list[Job]): List of job data
 
-        Returns:
-             (MetadataList): List of notes
-        """
-        if not jobs:
-            raise Exception("No jobs for note making!")
+    Returns:
+         (MetadataList): List of notes
+    """
+    if not jobs:
+      raise Exception("No jobs for note making!")
 
-        SYSTEM_PROMPT = f"""
+    SYSTEM_PROMPT = f"""
         You are a helpful review assistant. You are required to make a brief 
         review of a user's profile against a list of job objects. The details are
         provided in </context>. Follow the instructions at </instructions> on how
@@ -128,20 +128,20 @@ class Gemini:
         </instructions>
         """
 
-        interaction = self.__client.interactions.create(
-            model="gemini-3.1-flash-lite",
-            input=", ".join([str(job) for job in jobs]),
-            system_instruction=SYSTEM_PROMPT,
-            response_format={
-                "mime_type": "application/json",
-                "type": "text",
-                "schema": MetadataList.model_json_schema(),
-            },
-        )
+    interaction = self.__client.interactions.create(
+        model="gemini-3.1-flash-lite",
+        input=", ".join([str(job) for job in jobs]),
+        system_instruction=SYSTEM_PROMPT,
+        response_format={
+          "mime_type": "application/json",
+          "type": "text",
+          "schema": MetadataList.model_json_schema(),
+        },
+    )
 
-        result = interaction.output_text
+    result = interaction.output_text
 
-        if not result:
-            raise Exception("Failed to review jobs")
+    if not result:
+      raise Exception("Failed to review jobs")
 
-        return MetadataList.model_validate_json(result)
+    return MetadataList.model_validate_json(result)

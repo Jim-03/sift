@@ -1,7 +1,7 @@
 import html
 from datetime import datetime
 
-from dto import Job, Metadata
+from src.dto import Job, Metadata
 
 GOLD = "#C9A34E"
 GOLD_DARK = "#9C7B2E"
@@ -13,73 +13,73 @@ BORDER = "#E8E0CC"
 
 
 def _esc(text: str) -> str:
-    return html.escape(text or "")
+  return html.escape(text or "")
 
 
 def _days_remaining(deadline_str: str) -> tuple[int, str, str]:
-    try:
-        deadline = datetime.strptime(deadline_str, "%d-%m-%Y").date()
-    except ValueError:
-        return 0, "Unknown", INK_DIM
-    days = (deadline - datetime.today().date()).days
-    if days < 0:
-        return days, "Deadline passed", "#B3452C"
-    if days <= 5:
-        return days, f"{days} day{'s' if days != 1 else ''} left", "#B3452C"
-    if days <= 14:
-        return days, f"{days} days left", GOLD_DARK
-    return days, f"{days} days left", "#4C7A4C"
+  try:
+    deadline = datetime.strptime(deadline_str, "%d-%m-%Y").date()
+  except ValueError:
+    return 0, "Unknown", INK_DIM
+  days = (deadline - datetime.today().date()).days
+  if days < 0:
+    return days, "Deadline passed", "#B3452C"
+  if days <= 5:
+    return days, f"{days} day{'s' if days != 1 else ''} left", "#B3452C"
+  if days <= 14:
+    return days, f"{days} days left", GOLD_DARK
+  return days, f"{days} days left", "#4C7A4C"
 
 
 def _bullet_list(items: list[str], limit: int = 5) -> str:
-    if not items:
-        return ""
-    shown = items[:limit]
-    extra = len(items) - limit
-    lis = "".join(
-        f'<li style="margin-bottom:4px;color:{INK};font-size:13px;line-height:1.5;">{_esc(item)}</li>'
-        for item in shown
-    )
-    more = (
-        f'<li style="color:{INK_DIM};font-size:13px;list-style:none;margin-top:2px;">+{extra} more — see full posting</li>'
-        if extra > 0
-        else ""
-    )
-    return f'<ul style="margin:4px 0 0 18px;padding:0;">{lis}{more}</ul>'
+  if not items:
+    return ""
+  shown = items[:limit]
+  extra = len(items) - limit
+  lis = "".join(
+      f'<li style="margin-bottom:4px;color:{INK};font-size:13px;line-height:1.5;">{_esc(item)}</li>'
+      for item in shown
+  )
+  more = (
+    f'<li style="color:{INK_DIM};font-size:13px;list-style:none;margin-top:2px;">+{extra} more — see full posting</li>'
+    if extra > 0
+    else ""
+  )
+  return f'<ul style="margin:4px 0 0 18px;padding:0;">{lis}{more}</ul>'
 
 
 def _fit_notes_block(meta) -> str:
-    if meta is None:
-        return ""
+  if meta is None:
+    return ""
 
-    strengths_html = "".join(
-        f'<li style="margin-bottom:4px;color:{INK};font-size:14px;line-height:1.5;">{_esc(s)}</li>'
-        for s in meta.strengths
-    )
-    gaps_html = "".join(
-        f'<li style="margin-bottom:4px;color:{INK};font-size:14px;line-height:1.5;">{_esc(g)}</li>'
-        for g in meta.gaps
-    )
+  strengths_html = "".join(
+      f'<li style="margin-bottom:4px;color:{INK};font-size:14px;line-height:1.5;">{_esc(s)}</li>'
+      for s in meta.strengths
+  )
+  gaps_html = "".join(
+      f'<li style="margin-bottom:4px;color:{INK};font-size:14px;line-height:1.5;">{_esc(g)}</li>'
+      for g in meta.gaps
+  )
 
-    strengths_section = (
-        f"""
+  strengths_section = (
+    f"""
       <p style="margin:10px 0 4px;color:{INK};font-size:13px;font-weight:600;">Strengths</p>
       <ul style="margin:0 0 10px 18px;padding:0;">{strengths_html}</ul>
     """
-        if meta.strengths
-        else ""
-    )
+    if meta.strengths
+    else ""
+  )
 
-    gaps_section = (
-        f"""
+  gaps_section = (
+    f"""
       <p style="margin:10px 0 4px;color:{INK};font-size:13px;font-weight:600;">Gaps</p>
       <ul style="margin:0 0 10px 18px;padding:0;">{gaps_html}</ul>
     """
-        if meta.gaps
-        else ""
-    )
+    if meta.gaps
+    else ""
+  )
 
-    return f"""
+  return f"""
     <tr><td style="padding-top:16px;border-top:1px solid {BORDER};">
       <p style="margin:12px 0 6px;color:{GOLD_DARK};font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">
         Fit notes
@@ -91,29 +91,29 @@ def _fit_notes_block(meta) -> str:
 
 
 def _job_card(job: Job, meta: Metadata | None) -> str:
-    days, deadline_label, deadline_color = _days_remaining(job.deadline)
+  days, deadline_label, deadline_color = _days_remaining(job.deadline)
 
-    salary_line = ""
-    if job.salary and job.salary != "Unknown":
-        currency = (
-            f"{job.currency} " if job.currency and job.currency != "Unknown" else ""
-        )
-        salary_line = f"""
+  salary_line = ""
+  if job.salary and job.salary != "Unknown":
+    currency = (
+      f"{job.currency} " if job.currency and job.currency != "Unknown" else ""
+    )
+    salary_line = f"""
         <tr><td style="padding-top:6px;color:{INK_DIM};font-size:13px;">
           {currency}{_esc(job.salary)}
         </td></tr>"""
 
-    benefits_block = ""
-    if job.benefits:
-        benefits_block = f"""
+  benefits_block = ""
+  if job.benefits:
+    benefits_block = f"""
         <tr><td style="padding-top:14px;">
           <p style="margin:0 0 4px;color:{INK};font-size:13px;font-weight:600;">Benefits</p>
           {_bullet_list(job.benefits, limit=4)}
         </td></tr>"""
 
-    notes_block = _fit_notes_block(meta)
+  notes_block = _fit_notes_block(meta)
 
-    return f'''
+  return f'''
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{CARD_BG};border:1px solid {BORDER};border-radius:10px;margin-bottom:16px;">
       <tr>
         <td style="padding:20px 22px;border-left:4px solid {GOLD};border-radius:10px 0 0 10px;">
@@ -153,20 +153,20 @@ def _job_card(job: Job, meta: Metadata | None) -> str:
 
 
 def template(jobs: list[Job], metadata: list[Metadata]) -> str:
-    """HTML body
+  """HTML body
 
-    Args:
-        jobs (list[Job]): A list of jobs
-        metadata (list[Metadata]): A list of notes for each job
+  Args:
+      jobs (list[Job]): A list of jobs
+      metadata (list[Metadata]): A list of notes for each job
 
-    Returns:
-        (string): HTML content
-    """
-    metadata_by_id = {m.job_id: m for m in metadata}
-    cards = "".join(_job_card(job, metadata_by_id.get(job.id)) for job in jobs)
-    count = len(jobs)
+  Returns:
+      (string): HTML content
+  """
+  metadata_by_id = {m.job_id: m for m in metadata}
+  cards = "".join(_job_card(job, metadata_by_id.get(job.id)) for job in jobs)
+  count = len(jobs)
 
-    return f"""<!DOCTYPE html>
+  return f"""<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
