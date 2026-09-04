@@ -1,6 +1,6 @@
 import asyncio
 
-from data import save_urls
+from src.data import save_urls
 from src.dto import Job, Metadata
 from src.gemini import Gemini
 from src.mail import send_email
