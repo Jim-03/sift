@@ -1,6 +1,9 @@
 from playwright.async_api import Page, async_playwright
 
+from data import get_urls
 from src.data import get_data
+
+seen_urls = get_urls()
 
 
 async def get_links(company: dict[str, str], page: Page) -> list[str]:
@@ -25,7 +28,7 @@ async def get_links(company: dict[str, str], page: Page) -> list[str]:
     for link in range(count):
         href = await located.nth(link).get_attribute(company["attribute"])
 
-        if href:
+        if href and not href in seen_urls:
             links.append(href)
 
     return links
@@ -77,7 +80,7 @@ async def get_jobs():
             links = await get_links(company, page)
 
             if len(links) == 0:
-                print(f"No listings from {company['name']}")
+                print(f"No new listings from {company['name']}")
                 continue
             listings = await get_listings(company["content_selector"], links, page)
             for url, text in zip(links, listings):
