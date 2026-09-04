@@ -130,7 +130,7 @@ class Gemini:
         """
 
         interaction = self.__client.interactions.create(
-            model="gemini-3.8-flash",
+            model="gemini-3.1-flash-lite",
             input=", ".join([str(job) for job in jobs]),
             system_instruction=SYSTEM_PROMPT,
             response_format={
