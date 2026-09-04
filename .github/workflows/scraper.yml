@@ -1,0 +1,34 @@
+name: Sift the internet
+
+on:
+  schedule:
+    - cron: "0 10 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    timeout-minutes: 25
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Install playwright dependencies
+        run: uv run playwright install webkit --with-deps
+
+      - name: Scrape
+        run: uv run python main.py
+        env:
+          GEMINI_API_KEY: ${{secrets.GEMINI_API_KEY}}
+          SENDER_EMAIL: ${{secrets.SENDER_EMAIL}}
+          APP_PASSWORD: ${{secrets.APP_PASSWORD}}
+          RECEIVER_EMAIL: ${{secrets.RECEIVER_EMAIL}}
+          SUPABASE_URL: ${{secrets.SUPABASE_URL}}
+          SUPABASE_KEY: ${{secrets.SUPABASE_KEY}}
+          SUPABASE_BUCKET: ${{secrets.SUPABASE_BUCKET}}
