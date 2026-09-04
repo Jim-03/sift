@@ -64,8 +64,14 @@ class JobListings(BaseModel):
 
 class Metadata(BaseModel):
     job_id: str = Field(description="Job's unique identifier")
-    notes: str = Field(
-        description="Brief overview of the user's match to the job description"
+    strengths: list[str] = Field(
+        description="Specific ways the candidate's background matches this job"
+    )
+    gaps: list[str] = Field(
+        description="Specific requirements the candidate's background does not clearly address, if any"
+    )
+    verdict: str = Field(
+        description="One or two sentence recommendation, in plain language, with no numeric score or percentage"
     )
 
 

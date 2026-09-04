@@ -118,14 +118,13 @@ class Gemini:
         
         <instructions>
         1. Provide a brief review assessing the user's match against each job.
-        2. The response for each job should be in **MARKDOWN** format.
-        3. Keep the review brief. The review can include (not strict) the overall
+        2. Keep the review brief. The review can include (not strict) the overall
            review, the fitness score or the skill gap.
-        4. Assume the response will be read in an email.
-        5. Use the value from the 'id' property to determine which response 
+        3. Assume the response will be read in an email.
+        4. Use the value from the 'id' property to determine which response 
            belongs to which job.
-        6. Be brutally honest on everything.
-        7. Use a standard format for every review.
+        5. Be brutally honest on everything.
+        6. Use a standard format for every review.
         </instructions>
         """
 
