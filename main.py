@@ -1,6 +1,6 @@
 import asyncio
 
-from src.data import save_urls
+from src.data import save_urls, store_data
 from src.dto import Job, Metadata
 from src.gemini import Gemini
 from src.mail import send_email
@@ -20,7 +20,7 @@ async def process_job():
             return
 
         # Filter out jobs with higher similarity score
-        higher_jobs = get_relevant_jobs(jobs, gemini)
+        higher_jobs = get_relevant_jobs([job["details"] for job in jobs], gemini)
 
         if not higher_jobs:
             return
@@ -45,7 +45,8 @@ async def process_job():
         send_email(valid_jobs, metadata)
 
         # Save seen urls
-        save_urls([job.source_url for job in valid_jobs])
+        save_urls([job["url"] for job in jobs])
+        store_data()
     except Exception as e:
         print(f"An error has occurred: {e}")
 

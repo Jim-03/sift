@@ -61,3 +61,12 @@ def save_urls(urls: list[str]):
             path="url.txt", file=f, file_options={"upsert": "true"}
         )
     os.remove("url.txt")
+
+
+def store_data():
+    with open("data.json", "rb") as f:
+        print("Uploading 'data.json'")
+        supabase.storage.from_(bucket).upload(
+            path="data.json", file=f, file_options={"upsert": "true"}
+        )
+    os.remove("data.json")
