@@ -27,8 +27,8 @@ async def get_links(company: dict[str, str], page: Page) -> list[str]:
     for link in range(count):
         href = await located.nth(link).get_attribute(company["attribute"])
 
-        if href and not href in seen_urls:
-            links.append(href)
+    if href and not href in seen_urls:
+      links.append(urljoin(company['url'], href))
 
     return links
 
