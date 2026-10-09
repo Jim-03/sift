@@ -1,3 +1,5 @@
+from urllib.parse import urljoin
+
 from playwright.async_api import Page, async_playwright
 
 from src.data import get_data, get_urls
@@ -28,7 +30,7 @@ async def get_links(company: dict[str, str], page: Page) -> list[str]:
         href = await located.nth(link).get_attribute(company["attribute"])
 
     if href and not href in seen_urls:
-      links.append(urljoin(company['url'], href))
+        links.append(urljoin(company["url"], href))
 
     return links
 
