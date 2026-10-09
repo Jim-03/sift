@@ -74,7 +74,7 @@ class Gemini:
         """
 
     interactions = self.__client.interactions.create(
-        model="gemini-3.1-flash-lite",
+        model="gemini-3.5-flash-lite",
         system_instruction=SYSTEM_PROMPT,
         input=", ".join(jobs),
         store=False,
