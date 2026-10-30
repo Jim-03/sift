@@ -98,7 +98,7 @@ async def search_jobs() -> list[str]:
             )
 
             for listing in company_listings:
-                listing = f"Company Name: {company.name}" + listing
+                listing = f"Company Name: {company.name}\n" + listing
 
                 listings.append(listing)
 
