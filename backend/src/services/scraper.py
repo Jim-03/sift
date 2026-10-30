@@ -1,6 +1,7 @@
 """Module handling web scraping"""
 
 import json
+import os.path
 from urllib.parse import urljoin
 
 from playwright.async_api import Page, async_playwright
@@ -21,6 +22,11 @@ async def get_links(company: Company, page: Page) -> set[str]:
 
     """
     urls: set[str] = set()
+    seen_urls: set[str] = set()
+
+    if os.path.exists("urls.txt"):
+        with open("urls.txt", "r") as f:
+            seen_urls = {line.strip().replace("\n", "") for line in f.readlines()}
 
     await page.goto(company.career_link, wait_until="domcontentloaded")
     base_url = page.url
@@ -31,7 +37,7 @@ async def get_links(company: Company, page: Page) -> set[str]:
     for i in range(count):
         href = await locator.nth(i).get_attribute(company.link_tag)
 
-        if href:
+        if href and href not in seen_urls:
             absolute_url = urljoin(base_url, href)
             urls.add(absolute_url)
 
