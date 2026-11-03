@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from uuid import uuid4
 
-from sqlalchemy import UUID, Column, Enum, LargeBinary, String
+from sqlalchemy import ARRAY, UUID, Column, Enum, String
 from sqlalchemy.orm import declarative_base
 
 from src.dto.job_dto import EmploymentType, ExperienceLevel
@@ -14,13 +14,14 @@ class JobModel(Base):
 
     id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True)
     title = Column(String, nullable=False)
+    url = Column(String)
     company = Column(String)
-    level = Column(Enum(ExperienceLevel))
-    duration = Column(Enum(EmploymentType))
+    experience_level = Column(Enum(ExperienceLevel))
+    employment_type = Column(Enum(EmploymentType))
     description = Column(String)
-    responsibilities = Column(LargeBinary)
-    requirements = Column(LargeBinary, nullable=False)
-    benefits = Column(LargeBinary)
+    responsibilities = Column(ARRAY(String))
+    requirements = Column(ARRAY(String), nullable=False)
+    benefits = Column(ARRAY(String))
     salary = Column(String)
     deadline = Column(
         String,
