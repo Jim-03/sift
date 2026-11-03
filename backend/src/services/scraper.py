@@ -8,6 +8,7 @@ from playwright.async_api import Page, async_playwright
 from uvicorn.config import logger
 
 from src.dto.company_dto import CompaniesList, Company
+PAGE_TIMEOUT = 60_000
 
 
 async def get_links(company: Company, page: Page) -> set[str]:
@@ -28,7 +29,9 @@ async def get_links(company: Company, page: Page) -> set[str]:
         with open("urls.txt", "r") as f:
             seen_urls = {line.strip().replace("\n", "") for line in f.readlines()}
 
-    await page.goto(company.career_link, wait_until="domcontentloaded")
+    await page.goto(
+        company.career_link, wait_until="domcontentloaded", timeout=PAGE_TIMEOUT
+    )
     base_url = page.url
 
     locator = page.locator(company.link_container)
@@ -59,7 +62,7 @@ async def get_listings(job_links: set[str], job_container: str, page: Page) -> s
     listings: set[str] = set()
 
     for link in job_links:
-        await page.goto(link, wait_until="domcontentloaded")
+        await page.goto(link, wait_until="domcontentloaded", timeout=PAGE_TIMEOUT)
 
         blocks = page.locator(job_container)
         count = await blocks.count()
