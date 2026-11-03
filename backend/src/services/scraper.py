@@ -5,9 +5,12 @@ import os.path
 from urllib.parse import urljoin
 
 from playwright.async_api import Page, async_playwright
-from uvicorn.config import logger
 
+from src.config.logger import logger
 from src.dto.company_dto import CompaniesList, Company
+from src.dto.job_dto import LLMJobDto
+from src.services.ollama_service.extractor import JobExtractor
+
 PAGE_TIMEOUT = 60_000
 
 
@@ -69,21 +72,22 @@ async def get_listings(job_links: set[str], job_container: str, page: Page) -> s
 
         texts = [await blocks.nth(text).inner_text() for text in range(count)]
 
-        listings.add(max(texts, key=len, default=""))
+        listings.add(f"URL: {link}\n" + max(texts, key=len, default=""))
 
     return listings
 
 
-async def search_jobs() -> list[str]:
+async def search_jobs() -> list[LLMJobDto]:
     """Get job postings
 
     Returns:
         (list[str]): A  list of new job postings from specified companies
 
     """
-    listings: list[str] = []
+    jobs: list[LLMJobDto] = []
+    extractor = JobExtractor()
 
-    with open("data/settings.json", "r") as f:
+    with open("settings.json", "r") as f:
         settings = json.load(f)
 
     companies = CompaniesList.model_validate(settings).companies
@@ -107,9 +111,8 @@ async def search_jobs() -> list[str]:
             )
 
             for listing in company_listings:
-                listing = f"Company Name: {company.name}\n" + listing
-
-                listings.append(listing)
+                job = await extractor.extract(listing)
+                jobs.append(job)
 
         await browser.close()
-    return listings
+    return jobs
