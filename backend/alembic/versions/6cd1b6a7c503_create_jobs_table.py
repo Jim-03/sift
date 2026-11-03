@@ -1,8 +1,8 @@
 """Create jobs table
 
-Revision ID: 6f11fb09e99e
+Revision ID: 6cd1b6a7c503
 Revises: 
-Create Date: 2026-10-31 15:11:50.485428
+Create Date: 2026-11-03 12:26:24.992845
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '6f11fb09e99e'
+revision: str = '6cd1b6a7c503'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,13 +24,14 @@ def upgrade() -> None:
     op.create_table('jobs',
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('title', sa.String(), nullable=False),
+    sa.Column('url', sa.String(), nullable=True),
     sa.Column('company', sa.String(), nullable=True),
-    sa.Column('level', sa.Enum('SENIOR', 'JUNIOR', 'INTERN', 'MID', name='experiencelevel'), nullable=True),
-    sa.Column('duration', sa.Enum('FULL_TIME', 'INTERNSHIP', 'CONTRACT', name='employmenttype'), nullable=True),
+    sa.Column('experience_level', sa.Enum('SENIOR', 'JUNIOR', 'INTERN', 'MID', name='experiencelevel'), nullable=True),
+    sa.Column('employment_type', sa.Enum('FULL_TIME', 'INTERNSHIP', 'CONTRACT', name='employmenttype'), nullable=True),
     sa.Column('description', sa.String(), nullable=True),
-    sa.Column('responsibilities', sa.LargeBinary(), nullable=True),
-    sa.Column('requirements', sa.LargeBinary(), nullable=False),
-    sa.Column('benefits', sa.LargeBinary(), nullable=True),
+    sa.Column('responsibilities', sa.ARRAY(sa.String()), nullable=True),
+    sa.Column('requirements', sa.ARRAY(sa.String()), nullable=False),
+    sa.Column('benefits', sa.ARRAY(sa.String()), nullable=True),
     sa.Column('salary', sa.String(), nullable=True),
     sa.Column('deadline', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('id')
