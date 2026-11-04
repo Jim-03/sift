@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
 from uuid import uuid4
 
-from sqlalchemy import ARRAY, UUID, Column, Enum, String
+from sqlalchemy import ARRAY, UUID, Column, Enum, ForeignKey, String
 from sqlalchemy.orm import declarative_base
 
 from src.dto.job_dto import EmploymentType, ExperienceLevel
+from src.services.ollama_service import Verdict
 
 Base = declarative_base()
 
@@ -27,3 +28,14 @@ class JobModel(Base):
         String,
         default=lambda: (datetime.now() + timedelta(days=7)).strftime("%d-%m-%Y"),
     )
+
+
+class JobMetadataModel(Base):
+    __tablename__ = "job_metadata"
+
+    job_id = Column(UUID(as_uuid=True), ForeignKey("jobs.id"), primary_key=True)
+    reasoning = Column(String)
+    matches = Column(ARRAY(String))
+    gaps = Column(ARRAY(String))
+    partial = Column(ARRAY(String))
+    verdict = Column(Enum(Verdict))
