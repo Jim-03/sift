@@ -1,3 +1,5 @@
+from enum import Enum
+
 from pydantic import BaseModel, Field
 
 from src.dto.job_dto import EmploymentType, ExperienceLevel
@@ -78,4 +80,37 @@ class JobCompensation(BaseModel):
     )
     benefits: list[str] = Field(
         description="A list of benefits the employee will receive on their job",
+    )
+
+
+class Verdict(str, Enum):
+    STRONG = "strong"
+    GOOD = "good"
+    PARTIAL = "partial"
+    WEAK = "weak"
+    NONE = "none"
+
+
+class JobMatchResult(BaseModel):
+    reasoning: str = Field(
+        description="Step-by-step reasoning evaluating the applicant's profile against each job requirement before categorizing findings. This ensures logical alignment."
+    )
+    matches: list[str] = Field(
+        description="A list of findings that suggest the applicant meets the job requirements. Keep each finding at one sentence max, using objective third-person tense."
+    )
+    partial: list[str] = Field(
+        description="A list of transferable skills that describes how the profile is nearly reaching the requirements. Keep each finding at one sentence max, using objective third-person tense."
+    )
+    gaps: list[str] = Field(
+        description="A list of missing justifications detailing where the applicant falls short. Keep each finding at one sentence max, using objective third-person tense."
+    )
+    verdict: Verdict = Field(
+        description="""
+        Overall review describing if the applicant is fit for the role.
+         **strong:** Highly suited for the job
+         **good:** Can proceed but with light checks
+         **partial:** Can proceed but with heavy checks
+         **weak:** Highly unlikely to get to the final stage
+         **none:** Shouldn't be considered at all 
+        """
     )
