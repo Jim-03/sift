@@ -1,4 +1,6 @@
 import enum
+from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -55,3 +57,19 @@ class LLMJobDto(BaseModel):
         description="The last date to apply in DD-MM-YYYY format. Output null if not mentioned.",
         default=None,
     )
+
+
+class JobDataDto(BaseModel):
+    id: UUID
+    title: str
+    url: str
+    company: str
+    experience_level: ExperienceLevel
+    employment_type: EmploymentType
+    description: str
+    responsibilities: list[str]
+    requirements: list[str]
+    benefits: list[str]
+    salary: str
+    deadline: str | None
+    created_at: datetime | None

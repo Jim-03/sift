@@ -9,6 +9,7 @@ from fastapi.websockets import WebSocket
 from src.config.database import Session, engine
 from src.config.logger import logger
 from src.config.socket_manager import SocketManager, SocketManagerDep
+from src.routers.job_router import job_router
 from src.services.job_service import JobService
 from src.services.scraper import search_jobs
 
@@ -52,6 +53,7 @@ def bootstrap():
 
 # Main instance
 app = FastAPI(lifespan=lifespan)
+app.include_router(job_router)
 
 
 # Websocket instant messaging
