@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
-from sqlalchemy import ARRAY, UUID, Column, Enum, ForeignKey, String
+import pytz
+from sqlalchemy import ARRAY, TIMESTAMP, UUID, Column, Enum, ForeignKey, String, func
 from sqlalchemy.orm import declarative_base
 
 from src.dto.job_dto import EmploymentType, ExperienceLevel
@@ -26,7 +27,13 @@ class JobModel(Base):
     salary = Column(String)
     deadline = Column(
         String,
-        default=lambda: (datetime.now() + timedelta(days=7)).strftime("%d-%m-%Y"),
+        default=lambda: (
+            datetime.now(pytz.timezone("Africa/Nairobi")) + timedelta(days=7)
+        ).strftime("%d-%m-%Y"),
+    )
+    created_at = Column(
+        TIMESTAMP(timezone=True),
+        default=lambda: datetime.now(pytz.timezone("Africa/Nairobi")),
     )
 
 
