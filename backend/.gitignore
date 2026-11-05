@@ -12,6 +12,7 @@ wheels/
 # Personal details
 settings.json
 urls.txt
+user.md
 
 # System logs
 logs/*
