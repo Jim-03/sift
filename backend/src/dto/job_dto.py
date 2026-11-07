@@ -2,7 +2,7 @@ import enum
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class EmploymentType(str, enum.Enum):
@@ -77,3 +77,15 @@ class JobDataDto(BaseModel):
     read: bool
     deadline: str | None
     created_at: datetime | None
+
+
+class StatisticsDto(BaseModel):
+    total_jobs: int = Field(description="Number of jobs in the database")
+    total_matches: int = Field(
+        description="Number of jobs the user profile strongly matches"
+    )
+    applied: int = Field(description="Number of jobs the user has applied")
+    best_match_jobs: list[JobDataDto] = Field(
+        description="A list of 5 recent best matching jobs"
+    )
+    recent_jobs: list[JobDataDto] = Field(description="A list of 5 recent job's found")

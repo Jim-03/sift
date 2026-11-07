@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException
-from sqlalchemy import ColumnElement
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import ColumnElement, case, func
 from sqlalchemy.orm import Session
 
-from src.config.database import DatabaseDep
-from src.config.model import JobModel
-from src.dto.job_dto import JobDataDto
+from src.config.database import get_db
+from src.config.model import JobMetadataModel, JobModel
+from src.dto.job_dto import JobDataDto, StatisticsDto
+from src.services.ollama_service import Verdict
 
 job_router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
@@ -17,7 +18,7 @@ async def get_jobs(
     company: str | None = None,
     limit: int = 10,
     page: int = 0,
-    db: Session = DatabaseDep,
+    db: Session = Depends(get_db),
 ):
     """Retrieve jobs
 
@@ -54,3 +55,47 @@ async def get_jobs(
         raise HTTPException(status_code=404, detail="No jobs at the moment")
 
     return jobs
+
+
+@job_router.get("/statistics")
+def get_statistics(db: Session = Depends(get_db)) -> StatisticsDto:
+    """Retrieve home page statistics
+
+    Args:
+        db: Database dependency
+
+    Returns:
+        (StatisticsDto): Home page statistics
+
+    """
+    job_stats = db.query(
+        func.count(JobModel.id).label("total"),
+        func.sum(case((JobModel.applied == True, 1), else_=0)).label("applied"),
+    ).one()
+
+    job_count = job_stats.total
+    applied = job_stats.applied or 0
+
+    best_match_count = (
+        db.query(JobMetadataModel)
+        .filter(JobMetadataModel.verdict == Verdict.STRONG)
+        .count()
+    )
+
+    best_jobs = (
+        db.query(JobModel)
+        .join(JobMetadataModel, JobModel.id == JobMetadataModel.job_id)
+        .order_by(JobMetadataModel.created_at)
+        .limit(5)
+        .all()
+    )
+
+    recent_jobs = db.query(JobModel).order_by(JobModel.created_at).limit(5).all()
+
+    return StatisticsDto(
+        total_jobs=job_count,
+        total_matches=best_match_count,
+        applied=applied,
+        best_match_jobs=best_jobs,
+        recent_jobs=recent_jobs,
+    )
