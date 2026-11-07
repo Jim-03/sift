@@ -60,6 +60,8 @@ class LLMJobDto(BaseModel):
 
 
 class JobDataDto(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: UUID
     title: str
     url: str
@@ -71,5 +73,7 @@ class JobDataDto(BaseModel):
     requirements: list[str]
     benefits: list[str]
     salary: str
+    applied: bool
+    read: bool
     deadline: str | None
     created_at: datetime | None

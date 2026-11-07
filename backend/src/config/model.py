@@ -1,8 +1,17 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from uuid import uuid4
 
 import pytz
-from sqlalchemy import ARRAY, TIMESTAMP, UUID, Column, Enum, ForeignKey, String, func
+from sqlalchemy import (
+    ARRAY,
+    TIMESTAMP,
+    UUID,
+    Boolean,
+    Column,
+    Enum,
+    ForeignKey,
+    String,
+)
 from sqlalchemy.orm import declarative_base
 
 from src.dto.job_dto import EmploymentType, ExperienceLevel
@@ -25,6 +34,8 @@ class JobModel(Base):
     requirements = Column(ARRAY(String), nullable=False)
     benefits = Column(ARRAY(String))
     salary = Column(String)
+    applied = Column(Boolean, server_default="false", nullable=False)
+    read = Column(Boolean, server_default="false", nullable=False)
     deadline = Column(
         String,
         default=lambda: (
@@ -46,3 +57,7 @@ class JobMetadataModel(Base):
     gaps = Column(ARRAY(String))
     partial = Column(ARRAY(String))
     verdict = Column(Enum(Verdict))
+    created_at = Column(
+        TIMESTAMP(timezone=True),
+        default=lambda: datetime.now(pytz.timezone("Africa/Nairobi")),
+    )
