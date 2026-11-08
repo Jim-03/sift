@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import ColumnElement, case, func, or_
+from sqlalchemy import case, func, or_
 from sqlalchemy.orm import Session
 
 from src.config.database import get_db
@@ -16,8 +16,7 @@ job_router = APIRouter(prefix="/jobs", tags=["Jobs"])
     "", summary="Get jobs", response_model=list[JobDataDto], status_code=200
 )
 async def get_jobs(
-    title: str | None = None,
-    company: str | None = None,
+    search_query: str | None = None,
     limit: int = 10,
     page: int = 0,
     db: Session = Depends(get_db),
@@ -25,8 +24,7 @@ async def get_jobs(
     """Retrieve jobs
 
     Args:
-        title: The name of the position to fetch
-        company: Company name
+        search_query: Company name/job title to fetch
         limit: Number of records to fetch in a page
         page: Page number. 0-indexed
         db: Database dependency
@@ -35,21 +33,19 @@ async def get_jobs(
         (list[JobDataDto]): List of jobs
 
     """
-    where: ColumnElement[bool] = []
 
-    if company:
-        where.append(JobModel.company.ilike(company))
-    if title:
-        where.append(JobModel.title.ilike(title))
     stmt = (
-        db.query(JobModel)
-        .order_by(JobModel.created_at)
-        .limit(limit)
-        .offset(limit * page)
+        db.query(JobModel).filter(
+            or_(
+                JobModel.title.ilike(f"%{search_query}%"),
+                JobModel.company.ilike(f"%{search_query}%"),
+            )
+        )
+        if search_query
+        else db.query(JobModel)
     )
 
-    if where:
-        stmt.where(where)
+    stmt.order_by(JobModel.created_at.desc()).limit(limit).offset(page * limit)
 
     jobs = stmt.all()
 
@@ -72,7 +68,7 @@ def get_statistics(db: Session = Depends(get_db)) -> StatisticsDto:
     """
     job_stats = db.query(
         func.count(JobModel.id).label("total"),
-        func.sum(case((JobModel.applied == True, 1), else_=0)).label("applied"),
+        func.sum(case((JobModel.applied, 1), else_=0)).label("applied"),
     ).one()
 
     job_count = job_stats.total
