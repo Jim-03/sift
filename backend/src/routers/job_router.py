@@ -1,10 +1,12 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import ColumnElement, case, func
 from sqlalchemy.orm import Session
 
 from src.config.database import get_db
 from src.config.model import JobMetadataModel, JobModel
-from src.dto.job_dto import JobDataDto, StatisticsDto
+from src.dto.job_dto import FullJobDto, JobDataDto, StatisticsDto
 from src.services.ollama_service import Verdict
 
 job_router = APIRouter(prefix="/jobs", tags=["Jobs"])
@@ -99,3 +101,28 @@ def get_statistics(db: Session = Depends(get_db)) -> StatisticsDto:
         best_match_jobs=best_jobs,
         recent_jobs=recent_jobs,
     )
+
+
+@job_router.get(
+    "/{job_id}",
+    response_model=FullJobDto,
+    summary="Get job details",
+    description="Retrieve a job's full description including review",
+    status_code=200,
+)
+async def get_job(job_id: UUID, db: Session = Depends(get_db)):
+    """Get job details
+
+    Args:
+        job_id: Unique job identifier
+        db: Database dependency
+
+    Returns:
+        (FullJobDto): Job details together with its review
+    """
+    job = db.query(JobModel).filter(JobModel.id == job_id).first()
+
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    return job

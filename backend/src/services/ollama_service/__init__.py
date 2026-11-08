@@ -2,7 +2,7 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-from src.dto.job_dto import EmploymentType, ExperienceLevel
+from src.dto.job_dto import EmploymentType, ExperienceLevel, Verdict
 
 
 class JobMetadata(BaseModel):
@@ -82,13 +82,6 @@ class JobCompensation(BaseModel):
         description="A list of benefits the employee will receive on their job",
     )
 
-
-class Verdict(str, Enum):
-    STRONG = "strong"
-    GOOD = "good"
-    PARTIAL = "partial"
-    WEAK = "weak"
-    NONE = "none"
 
 
 class JobMatchResult(BaseModel):

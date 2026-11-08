@@ -89,3 +89,29 @@ class StatisticsDto(BaseModel):
         description="A list of 5 recent best matching jobs"
     )
     recent_jobs: list[JobDataDto] = Field(description="A list of 5 recent job's found")
+
+
+class Verdict(str, enum.Enum):
+    """Enum to gauge how well the profile matches the job"""
+
+    STRONG = "strong"
+    GOOD = "good"
+    PARTIAL = "partial"
+    WEAK = "weak"
+    NONE = "none"
+
+
+class JobReview(BaseModel):
+    reasoning: str = Field(description="Overall reasoning applied by the LLM")
+    matches: list[str] = Field(
+        description="A list of job requirements met by the user's profile"
+    )
+    partial: list[str] = Field(description="A list of transferable skills")
+    gaps: list[str] = Field(description="Missing gaps that may disqualify the profile")
+    verdict: Verdict = Field(
+        description="A gauge to determine how well the profile matches the job"
+    )
+
+
+class FullJobDto(JobDataDto):
+    job_metadata: JobReview | None = Field(description="LLM-based review")
