@@ -12,7 +12,7 @@ from sqlalchemy import (
     ForeignKey,
     String,
 )
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base, relationship
 
 from src.dto.job_dto import EmploymentType, ExperienceLevel
 from src.services.ollama_service import Verdict
@@ -47,6 +47,8 @@ class JobModel(Base):
         default=lambda: datetime.now(pytz.timezone("Africa/Nairobi")),
     )
 
+    job_metadata = relationship("JobMetadataModel", back_populates="job", uselist=False)
+
 
 class JobMetadataModel(Base):
     __tablename__ = "job_metadata"
@@ -61,3 +63,5 @@ class JobMetadataModel(Base):
         TIMESTAMP(timezone=True),
         default=lambda: datetime.now(pytz.timezone("Africa/Nairobi")),
     )
+
+    job = relationship("JobModel", back_populates="job_metadata")
