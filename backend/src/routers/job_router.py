@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import ColumnElement, case, func
+from sqlalchemy import ColumnElement, case, func, or_
 from sqlalchemy.orm import Session
 
 from src.config.database import get_db
@@ -101,6 +101,44 @@ def get_statistics(db: Session = Depends(get_db)) -> StatisticsDto:
         best_match_jobs=best_jobs,
         recent_jobs=recent_jobs,
     )
+
+
+@job_router.get(
+    "/best",
+    summary="Get best matching jobs",
+    description="Get jobs ranked as strong/good match",
+    response_model=list[FullJobDto],
+    status_code=200,
+)
+def get_best_jobs(db: Session = Depends(get_db)):
+    """Get best matching jobs
+
+    Args:
+        db: Database dependency
+
+    Returns:
+        (list[FullJobDto]): A list of jobs ranked as strong/good match
+
+    """
+    jobs = (
+        db.query(JobModel)
+        .join(JobMetadataModel, JobModel.id == JobMetadataModel.job_id)
+        .where(
+            or_(
+                JobMetadataModel.verdict == Verdict.STRONG,
+                JobMetadataModel.verdict == Verdict.GOOD,
+            )
+        )
+        .order_by(JobModel.created_at)
+        .all()
+    )
+
+    if not jobs:
+        raise HTTPException(
+            status_code=404, detail="No best matching jobs found at the moment"
+        )
+
+    return jobs
 
 
 @job_router.get(
