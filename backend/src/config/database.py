@@ -11,7 +11,7 @@ load_dotenv()
 
 db_url = os.getenv("DATABASE_URL", "sqlite:///sift.db")
 
-engine = create_engine(url=db_url)
+engine = create_engine(url=db_url, pool_pre_ping=True)
 
 Session = sessionmaker(bind=engine)
 
