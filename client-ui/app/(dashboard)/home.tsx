@@ -136,7 +136,7 @@ export default function HomeScreen() {
           <SectionHeader
             title="Best Matches"
             actionText="View all"
-            action={() => router.push('/best-jobs')}
+            action={() => router.push({ pathname: '/jobs', params: { mode: 'matches' } })}
           />
 
           {stats.best_match_jobs?.length === 0 ? (
@@ -196,7 +196,7 @@ export default function HomeScreen() {
           <SectionHeader
             title="Latest Arrivals"
             actionText="Browse"
-            action={() => router.push('/jobs')}
+            action={() => router.push({ pathname: '/jobs', params: { mode: 'browse' } })}
           />
 
           {stats.recent_jobs?.length === 0 ? (
