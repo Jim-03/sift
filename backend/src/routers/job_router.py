@@ -1,12 +1,12 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import case, func, or_
+from sqlalchemy import and_, case, func, or_
 from sqlalchemy.orm import Session
 
 from src.config.database import get_db
 from src.config.model import JobMetadataModel, JobModel
-from src.dto.job_dto import FullJobDto, JobDataDto, StatisticsDto
+from src.dto.job_dto import EmploymentType, FullJobDto, JobDataDto, StatisticsDto
 from src.services.ollama_service import Verdict
 
 job_router = APIRouter(prefix="/jobs", tags=["Jobs"])
@@ -19,11 +19,17 @@ async def get_jobs(
     search_query: str | None = None,
     limit: int = 10,
     page: int = 0,
+    job_type: EmploymentType | None = None,
+    read: bool | None = None,
+    applied: bool | None = None,
     db: Session = Depends(get_db),
 ):
     """Retrieve jobs
 
     Args:
+        job_type: Type of job to fetch
+        read: View status
+        applied: Application status
         search_query: Company name/job title to fetch
         limit: Number of records to fetch in a page
         page: Page number. 0-indexed
@@ -34,18 +40,31 @@ async def get_jobs(
 
     """
 
-    stmt = (
-        db.query(JobModel).filter(
+    stmt = db.query(JobModel)
+
+    where = []
+
+    if search_query:
+        where.append(
             or_(
                 JobModel.title.ilike(f"%{search_query}%"),
                 JobModel.company.ilike(f"%{search_query}%"),
             )
         )
-        if search_query
-        else db.query(JobModel)
-    )
 
-    stmt.order_by(JobModel.created_at.desc()).limit(limit).offset(page * limit)
+    if job_type:
+        where.append(and_(JobModel.employment_type == job_type))
+
+    if read is not None:
+        where.append(and_(JobModel.read == read))
+
+    if applied is not None:
+        where.append(and_(JobModel.applied == applied))
+
+    if len(where) != 0:
+        stmt = stmt.where(*where)
+
+    stmt = stmt.order_by(JobModel.created_at.desc()).limit(limit).offset(page * limit)
 
     jobs = stmt.all()
 
