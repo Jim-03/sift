@@ -10,7 +10,6 @@ from src.config.logger import logger
 from src.config.model import JobMetadataModel, JobModel
 from src.dto.job_dto import LLMJobDto
 from src.services.gemini import GeminiService
-from src.services.ollama_service import JobMatchResult
 
 DELAY = 60
 GEMINI_BATCH_SIZE = 5
@@ -48,6 +47,9 @@ class JobService:
             self.__db.commit()
 
             logger.info(f"Successfully added {len(new_jobs)} new job(s)")
+
+            with open("urls.txt", "a") as f:
+                f.writelines([job.url for job in jobs])
 
             return saved_jobs
         except Exception as e:
