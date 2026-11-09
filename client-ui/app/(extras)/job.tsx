@@ -18,6 +18,7 @@ import {
 import client from '@/lib/client';
 import { FullJobDto, Verdict } from '@/lib/dto';
 import { AxiosError } from 'axios';
+import ApplyMarkerModal from '@/components/application';
 
 /**
  * Reusable component displayed on clicking a job card
@@ -33,6 +34,8 @@ export default function JobDetailsScreen() {
   const [job, setJob] = useState<FullJobDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isApplyModalVisible, setIsApplyModalVisible] = useState(false);
 
   const iconPrimary = '#6366f1'; // Indigo 500
   const iconNeutral = isDark ? '#94a3b8' : '#64748b'; // Slate 400/500
@@ -53,6 +56,47 @@ export default function JobDetailsScreen() {
 
     if (job_id) fetchJobDetails();
   }, [job_id]);
+
+  useEffect(() => {
+    const markAsRead = async () => {
+      if (isUploading || !job || job.read) return;
+      setIsUploading(true);
+      try {
+        const response = await client.patch(`/jobs/${job_id}?read=true`);
+        const data = response.data as FullJobDto;
+        setJob(data);
+      } catch (e) {
+        if (e instanceof AxiosError) {
+          const message = e.response?.data.detail || 'An error occurred while updating the job';
+          console.error(message);
+        }
+      } finally {
+        setIsUploading(false);
+      }
+    };
+
+    if (!isLoading) markAsRead();
+  }, [isLoading]);
+
+  const apply = async () => {
+    if (isUploading || !job || job.applied || isUploading) return;
+    setIsUploading(true);
+
+    try {
+      const response = await client.patch(`/jobs/${job_id}?applied=true`);
+      const data = response.data as FullJobDto;
+
+      setJob(data);
+    } catch (e) {
+      if (e instanceof AxiosError) {
+        const message = e.response?.data.detail || 'An error occurred when applying for a job';
+
+        console.error(message);
+      }
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
@@ -109,6 +153,14 @@ export default function JobDetailsScreen() {
   return (
     <View className="flex-1 bg-slate-50 dark:bg-slate-900">
       <Stack.Screen options={{ headerShown: false }} />
+
+      <ApplyMarkerModal
+        visible={isApplyModalVisible}
+        close={() => setIsApplyModalVisible(false)}
+        apply={() => {
+          apply();
+        }}
+      />
 
       {/* CUSTOM HEADER */}
       <View
@@ -270,8 +322,13 @@ export default function JobDetailsScreen() {
           <ExternalLink color={iconPrimary} size={24} />
         </TouchableOpacity>
 
-        {/*TODO: Implement application*/}
-        <TouchableOpacity className="h-14 flex-1 items-center justify-center rounded-2xl bg-indigo-500 shadow-md shadow-indigo-200 dark:shadow-none">
+        <TouchableOpacity
+          disabled={job.applied}
+          onPress={() => {
+            if (job.applied) return;
+            setIsApplyModalVisible(true);
+          }}
+          className="h-14 flex-1 items-center justify-center rounded-2xl bg-indigo-500 shadow-md shadow-indigo-200 dark:shadow-none">
           <Text className="text-lg font-bold text-white">
             {job.applied ? 'Already Applied' : 'Apply Now'}
           </Text>

@@ -5,11 +5,54 @@ from sqlalchemy import and_, case, func, or_
 from sqlalchemy.orm import Session
 
 from src.config.database import get_db
+from src.config.logger import logger
 from src.config.model import JobMetadataModel, JobModel
 from src.dto.job_dto import EmploymentType, FullJobDto, JobDataDto, StatisticsDto
 from src.services.ollama_service import Verdict
 
 job_router = APIRouter(prefix="/jobs", tags=["Jobs"])
+
+
+@job_router.patch(
+    "/{job_id}", summary="Update job", response_model=FullJobDto, status_code=200
+)
+def update_job(
+    job_id: UUID,
+    read: bool | None = None,
+    applied: bool | None = None,
+    db: Session = Depends(get_db),
+):
+    """Partially update a job
+
+    Args:
+        job_id: Unique job identifier
+        read: Update to read field
+        applied: Update to applied field
+        db: database dependency
+
+    Returns:
+        (FullJobDto): Newly updated job data
+
+    """
+    try:
+        job = db.query(JobModel).filter(JobModel.id == job_id).first()
+
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+
+        if read is not None:
+            job.read = read
+        if applied is not None:
+            job.applied = applied
+
+        db.commit()
+        db.refresh(job)
+
+        return job
+    except Exception as e:
+        db.rollback()
+        logger.error(f"An error has occurred while updating a job: {e}")
+        raise
 
 
 @job_router.get(
