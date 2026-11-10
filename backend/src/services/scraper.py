@@ -9,7 +9,7 @@ from playwright.async_api import Page, async_playwright
 from src.config.logger import logger
 from src.dto.company_dto import CompaniesList, Company
 from src.dto.job_dto import LLMJobDto
-from src.services.ollama_service.extractor import JobExtractor
+from src.services.gemini import GeminiService
 
 PAGE_TIMEOUT = 60_000
 
@@ -85,7 +85,7 @@ async def search_jobs() -> list[LLMJobDto]:
 
     """
     jobs: list[LLMJobDto] = []
-    extractor = JobExtractor()
+    gemini = GeminiService()
 
     with open("settings.json", "r") as f:
         settings = json.load(f)
@@ -111,7 +111,7 @@ async def search_jobs() -> list[LLMJobDto]:
             )
 
             for listing in company_listings:
-                job = await extractor.extract(listing)
+                job = await gemini.extract_job(listing)
                 jobs.append(job)
 
         await browser.close()
