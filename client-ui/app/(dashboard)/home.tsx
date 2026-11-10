@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeInRight } from 'react-native-reanimated';
 import {
-  Bell,
   Briefcase,
   BriefcaseBusiness,
   CheckCircle,
@@ -57,7 +56,6 @@ export default function HomeScreen() {
 
   const iconPrimary = '#6366f1';
   const iconNeutral = isDark ? '#94a3b8' : '#64748b';
-  const iconText = isDark ? '#f8fafc' : '#0f172a';
 
   // --- LOADING STATE ---
   if (isLoading) {
@@ -103,11 +101,13 @@ export default function HomeScreen() {
             </Text>
           </View>
           {/* TODO: Implement notifications */}
-          <TouchableOpacity
-            onPress={() => router.push('/notifications')}
-            className="h-10 w-10 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800">
-            <Bell color={iconText} size={20} />
-          </TouchableOpacity>
+          {/*
+            <TouchableOpacity
+              onPress={() => router.push('/notifications')}
+              className="h-10 w-10 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800">
+              <Bell color={iconText} size={20} />
+            </TouchableOpacity>
+          */}
         </View>
 
         {/* OVERVIEW STATS */}

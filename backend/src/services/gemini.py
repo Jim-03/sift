@@ -51,6 +51,7 @@ class GeminiService:
             temperature=0,
             response_schema=LLMJobDto,
             store=False,
+            http_options=http_options,
         )
 
         chat = self.__client.aio.chats.create(
