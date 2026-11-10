@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi_throttle import RateLimiter
 from sqlalchemy import and_, case, func, or_
 from sqlalchemy.orm import Session
 
@@ -10,7 +11,8 @@ from src.config.model import JobMetadataModel, JobModel
 from src.dto.job_dto import EmploymentType, FullJobDto, JobDataDto, StatisticsDto
 from src.services.ollama_service import Verdict
 
-job_router = APIRouter(prefix="/jobs", tags=["Jobs"])
+api_limit = RateLimiter(times=5, seconds=60, detail="Server under heavy load")
+job_router = APIRouter(prefix="/jobs", tags=["Jobs"], dependencies=[Depends(api_limit)])
 
 
 @job_router.patch(
