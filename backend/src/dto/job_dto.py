@@ -1,5 +1,6 @@
 import enum
 from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -66,13 +67,13 @@ class JobDataDto(BaseModel):
     title: str
     url: str
     company: str
-    experience_level: ExperienceLevel
-    employment_type: EmploymentType
-    description: str
+    experience_level: Optional[ExperienceLevel]
+    employment_type: Optional[EmploymentType]
+    description: Optional[str]
     responsibilities: list[str]
     requirements: list[str]
     benefits: list[str]
-    salary: str
+    salary: Optional[str]
     applied: bool
     read: bool
     deadline: str | None
