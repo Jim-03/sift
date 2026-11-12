@@ -38,7 +38,8 @@ async def process_jobs():
 
     if len(jobs) != 0:
         try:
-            job_service.save_jobs(jobs)
+            jobs = job_service.save_jobs(jobs)
+            await job_service.evaluate_jobs(jobs)
             # TODO: Notify client devices
         finally:
             session.close()
