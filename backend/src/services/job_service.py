@@ -49,7 +49,7 @@ class JobService:
             logger.info(f"Successfully added {len(new_jobs)} new job(s)")
 
             with open("urls.txt", "a") as f:
-                f.writelines([job.url for job in jobs])
+                f.write("\n".join(job.url for job in jobs) + "\n")
 
             return saved_jobs
         except Exception as e:

@@ -30,7 +30,7 @@ async def get_links(company: Company, page: Page) -> set[str]:
 
     if os.path.exists("urls.txt"):
         with open("urls.txt", "r") as f:
-            seen_urls = {line.strip().replace("\n", "") for line in f.readlines()}
+            seen_urls = {line.strip() for line in f}
 
     await page.goto(
         company.career_link, wait_until="domcontentloaded", timeout=PAGE_TIMEOUT
