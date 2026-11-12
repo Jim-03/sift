@@ -16,7 +16,7 @@ import {
   XCircle,
 } from 'lucide-react-native';
 import client from '@/lib/client';
-import { FullJobDto, Verdict } from '@/lib/dto';
+import { FullJobDto, JobReview, Verdict } from '@/lib/dto';
 import { AxiosError } from 'axios';
 import ApplyMarkerModal from '@/components/application';
 
@@ -95,6 +95,35 @@ export default function JobDetailsScreen() {
       }
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  /**
+   * Generate missing analysis
+   */
+  const getAnalysis = async () => {
+    if (isLoading || job?.job_metadata) return;
+    setIsLoading(true);
+
+    try {
+      const response = await client.get(`/jobs/${job_id}/analysis`);
+      const data = response.data as JobReview;
+
+      setJob((prev) => {
+        const prevJob = prev as FullJobDto;
+
+        prevJob.job_metadata = data;
+
+        return prevJob;
+      });
+    } catch (e) {
+      if (e instanceof AxiosError) {
+        const message =
+          e.response?.data.detail || "An error has occurred while fetching the job's analysis";
+        console.error(message);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -197,11 +226,11 @@ export default function JobDetailsScreen() {
             />
             <Metric
               icon={<Layers color={iconNeutral} size={16} />}
-              text={job.employment_type.toLowerCase().replace('-', ' ')}
+              text={job.employment_type?.toLowerCase().replace('-', ' ') || ''}
             />
             <Metric
               icon={<BriefcaseBusiness color={iconNeutral} size={16} />}
-              text={job.experience_level.toLowerCase().replace('-', ' ')}
+              text={job.experience_level?.toLowerCase().replace('-', ' ') || ''}
             />
             <Metric
               icon={<CalendarDays color={iconNeutral} size={16} />}
@@ -271,7 +300,9 @@ export default function JobDetailsScreen() {
               <Text className="mb-4 text-center text-sm text-slate-500 dark:text-slate-400">
                 SIFT hasn&#39;t reviewed this job against your profile yet.
               </Text>
-              <TouchableOpacity className="rounded-full bg-indigo-500 px-6 py-2.5">
+              <TouchableOpacity
+                className="rounded-full bg-indigo-500 px-6 py-2.5"
+                onPress={getAnalysis}>
                 <Text className="font-bold text-white">Assess Fitness</Text>
               </TouchableOpacity>
             </View>

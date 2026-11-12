@@ -8,7 +8,14 @@ from sqlalchemy.orm import Session
 from src.config.database import get_db
 from src.config.logger import logger
 from src.config.model import JobMetadataModel, JobModel
-from src.dto.job_dto import EmploymentType, FullJobDto, JobDataDto, StatisticsDto
+from src.dto.job_dto import (
+    EmploymentType,
+    FullJobDto,
+    JobDataDto,
+    JobReview,
+    StatisticsDto,
+)
+from src.services.job_service import JobService
 from src.services.ollama_service import Verdict
 
 api_limit = RateLimiter(times=5, seconds=60, detail="Server under heavy load")
@@ -55,6 +62,39 @@ def update_job(
         db.rollback()
         logger.error(f"An error has occurred while updating a job: {e}")
         raise
+
+
+@job_router.get(
+    "/{job_id}/analysis",
+    response_model=JobReview,
+    status_code=200,
+    summary="Get job analysis",
+    description="Invoke Gemini to analyze job fitness against the user profile",
+)
+async def get_analysis(
+    job_id: UUID, db: Session = Depends(get_db), service: JobService = Depends()
+):
+    """Generate job analysis
+
+    Args:
+        job_id: Job unique identifier
+        db: Database session
+        service: Job service
+
+    Returns:
+         (JobReview): Generated job match evaluation
+    """
+    job = db.query(JobModel).filter(JobModel.id == job_id).one()
+
+    if not job:
+        raise HTTPException(status_code=404, detail="Job Not found")
+
+    if job.job_metadata:
+        return job.job_metadata
+
+    metadata = await service.evaluate_jobs([job])
+
+    return metadata[0]
 
 
 @job_router.get(
