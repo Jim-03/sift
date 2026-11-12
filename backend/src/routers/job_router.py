@@ -187,6 +187,7 @@ def get_statistics(db: Session = Depends(get_db)) -> StatisticsDto:
     best_jobs = (
         db.query(JobModel)
         .join(JobMetadataModel, JobModel.id == JobMetadataModel.job_id)
+        .filter(JobMetadataModel.verdict == Verdict.STRONG)
         .order_by(JobMetadataModel.created_at)
         .limit(5)
         .all()
