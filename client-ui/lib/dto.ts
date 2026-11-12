@@ -11,13 +11,13 @@ export interface JobDto {
   title: string;
   url: string;
   company: string;
-  experience_level: ExperienceLevel;
-  employment_type: EmploymentType;
+  experience_level: ExperienceLevel | null;
+  employment_type: EmploymentType | null;
   description: string;
   responsibilities: string[];
   requirements: string[];
   benefits: string[];
-  salary: string;
+  salary: string | null;
   applied: boolean;
   read: boolean;
   deadline: string;

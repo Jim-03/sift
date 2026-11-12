@@ -77,13 +77,13 @@ export default function JobCard({ job, onPress }: JobCardProps) {
         <View className="flex-row items-center rounded-lg bg-slate-50 px-2.5 py-1.5 dark:bg-slate-700/50">
           <Layers color={iconNeutral} size={12} />
           <Text className="ml-1.5 text-xs font-medium capitalize text-slate-600 dark:text-slate-300">
-            {job.employment_type.toLowerCase().replace('-', ' ')}
+            {job.employment_type?.toLowerCase().replace('-', ' ')}
           </Text>
         </View>
 
         <View className="flex-row items-center rounded-lg bg-slate-50 px-2.5 py-1.5 dark:bg-slate-700/50">
           <Text className="text-xs font-medium capitalize text-slate-600 dark:text-slate-300">
-            {job.experience_level.toLowerCase().replace('-', ' ')}
+            {job.experience_level?.toLowerCase().replace('-', ' ')}
           </Text>
         </View>
       </View>
