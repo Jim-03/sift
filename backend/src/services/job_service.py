@@ -37,11 +37,11 @@ class JobService:
         saved_jobs = []
         try:
             for i in range(0, len(jobs), self.__BATCH_SIZE):
-                stmt = (
-                    insert(JobModel)
-                    .values(new_jobs[i : i + self.__BATCH_SIZE])
-                    .returning(JobModel)
-                )
+                batch = [
+                    {k: v for k, v in job.items() if v is not None}
+                    for job in new_jobs[i : i + self.__BATCH_SIZE]
+                ]
+                stmt = insert(JobModel).values(batch).returning(JobModel)
 
                 saved_jobs.extend(self.__db.scalars(stmt).all())
             self.__db.commit()
